@@ -21,8 +21,8 @@ public class Hospital {
     private Integer id;//auto)incresement
 
     private String addr; //주소
-    private Integer adtEndDd; //요양개시일자
-    private Integer adtFrDd; //요양종료일자
+    private Integer adtEndDd; //요양종료일자
+    private Integer adtFrDd; //요양개시일자
     private String sgguNm; //시군구명
     private String sidoNm; //시도명
     private String telno; //전화번호

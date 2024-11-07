@@ -2,10 +2,15 @@ package site.metacoding.hospi.batch;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
+
+import site.metacoding.hospi.domain.Hospital;
 
 // 하루에 한번씩 다운로드해서 DB에 변경해주기
 // pcr 검사기관이 추가 될 수 있기 때문에!!
@@ -19,23 +24,51 @@ public class HospDownloadBatchTest {
     
     @Test
     public void start() throws URISyntaxException {
+        //1.담을그릇준비
+        List<Hospital> hospitals = new ArrayList<>();
 
         // 1. 공공데이터 다운로드
         RestTemplate rt = new RestTemplate();
 
-        //servicekey 에러나면 URI 사용하기
-        String url = "https://apis.data.go.kr/B551182/cv19EtgMsupHospService/getCv19EtgMsupHospList?serviceKey=Q51wiYKC3vaY1YhZR%2BHAds2pRgx9%2B4lPEuNvIJRltzO4FE9Tkh8B0jYw%2FMyxI2Uo7WguDJ4flwnQny52C6kytA==&pageNo=1&numOfRows=3&pageNo=1&numOfRows=10&_type=json";
+        int totalcount = 1;
 
+        String totalCounturl = "https://apis.data.go.kr/B551182/cv19EtgMsupHospService/getCv19EtgMsupHospList?serviceKey=Q51wiYKC3vaY1YhZR%2BHAds2pRgx9%2B4lPEuNvIJRltzO4FE9Tkh8B0jYw%2FMyxI2Uo7WguDJ4flwnQny52C6kytA==&pageNo=1&numOfRows=3&pageNo=1&numOfRows="
+        +totalcount+"&_type=json";
+
+        URI totaluri = new URI(totalCounturl);
+
+        ResponseDto dtoTotalCount = rt.getForObject(totaluri, ResponseDto.class);
+        totalcount = dtoTotalCount.getResponse().getBody().getTotalCount();
+        System.out.println("토탈카운트수: "+totalcount);
+
+        
+        String url = "https://apis.data.go.kr/B551182/cv19EtgMsupHospService/getCv19EtgMsupHospList?serviceKey=Q51wiYKC3vaY1YhZR%2BHAds2pRgx9%2B4lPEuNvIJRltzO4FE9Tkh8B0jYw%2FMyxI2Uo7WguDJ4flwnQny52C6kytA==&pageNo=1&numOfRows=3&pageNo=1&numOfRows="
+        +totalcount+"&_type=json";
+
+        //servicekey 에러나면 URI 사용하기
         URI uri = new URI(url);
 
-        ResponseDto dto = rt.getForObject(uri, ResponseDto.class);
-        //String dto = rt.getForObject(uri, String.class);
-        //System.out.println(dto);
-        List<Item> hospitals = dto.getResponse().getBody().getItems().getItem();
-        for (Item item : hospitals) {
-            System.out.println(item.getYadmNm());
-        }
-        
+        //ResponseDto dto = rt.getForObject(uri, ResponseDto.class);
+
+
+        ResponseDto responseDto = rt.getForObject(uri, ResponseDto.class);
+
+        List<Item> items = responseDto.getResponse().getBody().getItems().getItem();
+        System.out.println("가져온 데이터 사이즈 : " + items.size());
+
+        hospitals = items.stream().map(
+            (e) -> {
+                return Hospital.builder()
+                .addr(e.getAddr())
+                .adtEndDd(e.getAdtEndDd())
+                .adtFrDd(e.getAdtFrDd())
+                .sgguNm(e.getSgguNm())
+                .sidoNm(e.getSidoNm())
+                .telno(e.getTelno())
+                .yadmNm(e.getYadmNm())
+                .ykiho(e.getYkiho())
+                .build();
+                }).collect(Collectors.toList());
     }
 
 }
