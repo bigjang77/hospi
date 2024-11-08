@@ -1,9 +1,19 @@
 package site.metacoding.hospi.batch;
 
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
+import site.metacoding.hospi.domain.Hospital;
+import site.metacoding.hospi.domain.HospitalRepository;
 
 
 // 하루에 한번씩 다운로드해서 DB에 변경해주기
@@ -16,12 +26,59 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Component
 public class HospDownloadBatch {
-    
-    @Scheduled(cron="0 * * * * *", zone = "Asia/Seoul")
-    public void startBagtch() {
+
+    //DI
+    private final HospitalRepository hospitalRepository;
+
+    @Scheduled(cron = "0 47 * * * *", zone = "Asia/Seoul")
+    public void startBagtch() throws URISyntaxException {
 
         System.out.println("나 1분 마다 실행됨");
 
-    }
+        //1.담을그릇준비
+        List<Hospital> hospitals = new ArrayList<>();
 
+        //2.api 한번 호출해서 totalcount확인
+        RestTemplate rt = new RestTemplate();
+
+        int totalCount = 2;
+
+        String totalCounturl = "https://apis.data.go.kr/B551182/cv19EtgMsupHospService/getCv19EtgMsupHospList?serviceKey=Q51wiYKC3vaY1YhZR%2BHAds2pRgx9%2B4lPEuNvIJRltzO4FE9Tkh8B0jYw%2FMyxI2Uo7WguDJ4flwnQny52C6kytA==&pageNo=1&numOfRows="
+                + totalCount + "&_type=json";
+
+        URI totaluri = new URI(totalCounturl);
+
+        ResponseDto totalCountDto = rt.getForObject(totaluri, ResponseDto.class);
+        totalCount = totalCountDto.getResponse().getBody().getTotalCount();
+        System.out.println(totalCount);
+
+        //3.totalcount 가져오기
+        String url = "https://apis.data.go.kr/B551182/cv19EtgMsupHospService/getCv19EtgMsupHospList?serviceKey=Q51wiYKC3vaY1YhZR%2BHAds2pRgx9%2B4lPEuNvIJRltzO4FE9Tkh8B0jYw%2FMyxI2Uo7WguDJ4flwnQny52C6kytA==&pageNo=1&numOfRows="
+                + totalCount + "&_type=json";
+
+        URI uri = new URI(url);
+        System.out.println(uri);
+
+        ResponseDto responseDto = rt.getForObject(uri, ResponseDto.class);
+
+        List<Item> items = responseDto.getResponse().getBody().getItems().getItem();
+        System.out.println("가져온 데이터 사이즈 : " + items.size());
+
+        hospitals = items.stream().map(
+                (e) -> {
+                    return Hospital.builder()
+                            .addr(e.getAddr())
+                            .adtEndDd(e.getAdtEndDd())
+                            .adtFrDd(e.getAdtFrDd())
+                            .sgguNm(e.getSgguNm())
+                            .sidoNm(e.getSidoNm())
+                            .telno(e.getTelno())
+                            .yadmNm(e.getYadmNm())
+                            .ykiho(e.getYkiho())
+                            .build();
+                }).collect(Collectors.toList());
+
+        //배치시간에 insert(하루에한번)
+        hospitalRepository.saveAll(hospitals);
+    }
 }
