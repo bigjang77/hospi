@@ -23,14 +23,14 @@ import site.metacoding.hospi.domain.HospitalRepository;
 // 그냥 4개 데이터 삭제해버리고 새로 추가해서 넣자.
 // 공공데이터를 바로 바로 서비스해주는 방식은 하루에 트래픽이 1000이라서 서비스하기 힘들것같다.
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor        
 @Component
 public class HospDownloadBatch {
 
     //DI
     private final HospitalRepository hospitalRepository;
 
-    @Scheduled(cron = "0 47 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 * * * *", zone = "Asia/Seoul")
     public void startBagtch() throws URISyntaxException {
 
         System.out.println("나 1분 마다 실행됨");
@@ -78,7 +78,11 @@ public class HospDownloadBatch {
                             .build();
                 }).collect(Collectors.toList());
 
-        //배치시간에 insert(하루에한번)
-        hospitalRepository.saveAll(hospitals);
+                // 삭제 테스트
+                // 기존 데이터 다 삭제하기 (삭제 잘되는지 먼저 테스트 하기위해 yml - ddl auto update 로 변경)
+                hospitalRepository.deleteAll();
+                // 우선 다시 데이터 추가하고
+                // 배치시간에 db에 insert 하기 (하루에 한번 할 예정 우선 테스트 지금 48분 47분으로 세팅하고 서버시작)
+                hospitalRepository.saveAll(hospitals);
     }
 }
