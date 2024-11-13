@@ -3,6 +3,7 @@ server:
   servlet:
     encoding:
       charset: utf-8
+      force-response: true
 spring:
   datasource:
     url: jdbc:h2:mem:test
