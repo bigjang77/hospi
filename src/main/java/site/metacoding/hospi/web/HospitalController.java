@@ -12,12 +12,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HospitalController {
     
+    
     private final HospitalRepository hRepository;
 
     @GetMapping("/")
     public String home(String sidoNm, String sgguNm, Model model) {
 
-        model.addAttribute("hospitals", hRepository.mFindHospitals(sidoNm, sgguNm));
+        if (sidoNm != null && sidoNm != null) {
+            System.out.println("hospitalconterller" + hRepository.mFindSidoNm().size());
+            model.addAttribute("sidoNm", hRepository.mFindSidoNm());
+            model.addAttribute("hospitals", hRepository.mFindHospitals(sidoNm, sgguNm));
+        }
         
         return "index"; 
     }

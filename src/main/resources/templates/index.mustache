@@ -27,13 +27,24 @@
 </nav>
 
 <div class="container">
-  <h3>Hospital List</h3>
+  <h3>Hospital List(목록)</h3>
   <form action="/" method="get">
     <div class="mb-3 mt-3">
-      <input type="email" class="form-control"  placeholder="Seoul" name="sidoNm">
+
+      <select class="form-select form-select-sm mt-3" name="sidoNm">
+
+        {{#sidoNm}}
+          <option>{{.}}</option>
+        {{/sidoNm}}
+      </select>
+      </div> 
+
+
+    <div class="mb-3">
+      <input class="form-control"  placeholder="Seoul" name="sidoNm">
     </div>
     <div class="mb-3">
-      <input type="password" class="form-control"  placeholder="GangNam" name="sgguNm">
+      <input class="form-control"  placeholder="GangNam" name="sgguNm">
     </div>
     <button type="submit" class="btn btn-primary">Search Hospital</button>
   </form>
@@ -56,6 +67,14 @@
         </tr>
         {{/hospitals}}
 </div>
+
+<script>
+  let sidoNmDom = document.querySelector("#sidoNm");
+  
+  sidoNmDom.addEventListener("click", (e)=>{
+    console.log(e);
+  });
+</script>
 </body>
 </html>
 
