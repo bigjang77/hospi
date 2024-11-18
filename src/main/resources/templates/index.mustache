@@ -27,36 +27,37 @@
 </nav>
 
 <div class="container">
-  <h3>Hospital List(목록)</h3>
+  <h3>병원목록</h3>
   <form action="/" method="get">
     <div class="mb-3 mt-3">
+      <select class="form-select form-select-sm mt-3" name="sidoNm" id="sidoNm">
+        
+        {{#sidoNms}}
+        <option>{{.}}</option>
+        {{/sidoNms}}
 
-      <select class="form-select form-select-sm mt-3" name="sidoNm">
-
-        {{#sidoNm}}
-          <option>{{.}}</option>
-        {{/sidoNm}}
       </select>
-      </div> 
-
+    </div> 
 
     <div class="mb-3">
-      <input class="form-control"  placeholder="Seoul" name="sidoNm">
+      <select class="form-select" name="sgguNm" id="sgguNm">
+
+        {{#sgguNms}}
+        <option>{{.}}</option>
+        {{/sgguNms}}
+
+      </select>
     </div>
-    <div class="mb-3">
-      <input class="form-control"  placeholder="GangNam" name="sgguNm">
-    </div>
-    <button type="submit" class="btn btn-primary">Search Hospital</button>
+    <button type="submit" class="btn btn-primary">병원찾기</button>
   </form>
-
 
 <hr />
 
     <table class="table">
       <thead>
         <tr>
-          <th>Hospital Name</th>
-          <th>Hospital Adress</th>
+          <th>병원 명</th>
+          <th>병원 주소</th>
         </tr>
       </thead>
       <tbody id="tbody-hospital">
@@ -66,16 +67,44 @@
           <td>{{addr}}</td>
         </tr>
         {{/hospitals}}
+      </tbody>
+    </table>
 </div>
 
 <script>
-  let sidoNmDom = document.querySelector("#sidoNm");
+  document.addEventListener('DOMContentLoaded', () => {
+    let setSgguNm = (responsePasing) => {
+      let sgguNmDom = document.querySelector("#sgguNm");
+      sgguNmDom.innerHTML = '';  // 기존 옵션을 비우고
+      console.log(sgguNmDom);
+      
+
+      //리턴이 필요없으니 foreach로
+      responsePasing.forEach((e)=>{
+        //엘리멘트 생성후 넣기
+        let optionEL = document.createElement("option");
+        optionEL.text = e;
+        sgguNmDom.append(optionEL);
+      });
+
+      
+    }
+
+    let getSgguNm = async (sidoNm) => {
+      let response = await fetch(`http://localhost:8000/api/sgguNm?sidoNm=${sidoNm}`);
+      let responsePasing = await response.json();
+      console.log(responsePasing);
+      setSgguNm(responsePasing);
+    }
+
+    let sidoNmDom = document.querySelector("#sidoNm");
   
-  sidoNmDom.addEventListener("click", (e)=>{
-    console.log(e);
+    sidoNmDom.addEventListener("change", (e) => {
+      console.log(e.target.value);
+      let sidoNm = e.target.value;
+      getSgguNm(sidoNm);
+    });
   });
 </script>
 </body>
 </html>
-
-
