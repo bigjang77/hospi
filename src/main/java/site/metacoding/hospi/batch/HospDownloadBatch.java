@@ -30,9 +30,9 @@ public class HospDownloadBatch {
     //DI
     private final HospitalRepository hospitalRepository;
 
-    @Scheduled(cron = "0 37 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 49 * * * *", zone = "Asia/Seoul")
     public void startBagtch() throws URISyntaxException {
-
+        
         System.out.println("나 1분 마다 실행됨");
 
         //1.담을그릇준비
